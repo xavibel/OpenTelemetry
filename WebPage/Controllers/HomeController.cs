@@ -20,6 +20,7 @@ namespace WebPage.Controllers
 
         public async Task<IActionResult> Index()
         {
+            _logger.LogWarning("This is home controller");
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.GetAsync("http://localhost:5000/weatherforecast");
             return View();
