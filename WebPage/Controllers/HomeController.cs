@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using WebPage.Diagnostics;
 using WebPage.Models;
 
 namespace WebPage.Controllers
@@ -10,17 +10,17 @@ namespace WebPage.Controllers
     public class HomeController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<HomeController> _logger;
+        private readonly WebPageDiagnostics _diagnostics;
 
-        public HomeController(IHttpClientFactory httpClientFactory, ILogger<HomeController> logger)
+        public HomeController(IHttpClientFactory httpClientFactory, WebPageDiagnostics diagnostics)
         {
-            _logger = logger;
+            _diagnostics = diagnostics;
             _httpClientFactory = httpClientFactory;
         }
 
         public async Task<IActionResult> Index()
         {
-            _logger.LogWarning("This is home controller");
+            _diagnostics.HomeIndex("Extra data");
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.GetAsync("http://localhost:5000/weatherforecast");
             return View();
