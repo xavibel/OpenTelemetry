@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 
 namespace WebPage.Diagnostics
 {
@@ -12,11 +13,14 @@ namespace WebPage.Diagnostics
             _logger = loggerFactory.CreateLogger("WebPage");
         }
 
-        public void HomeIndex()
+        public void HomeIndex(string data)
         {
-            LoggerMessage.Define<string>(LogLevel.Warning, WebPageClientIds.HomeIndexEventId,
-                "We are on Home Index with data {data}");
+            _homeIndex(_logger, data, null);
         }
+
+        private Action<ILogger, string, Exception> _homeIndex = LoggerMessage.Define<string>(
+            LogLevel.Warning, WebPageClientIds.HomeIndexEventId,
+            "We are on Home Index with data {data}");
     }
 
     public class WebPageClientIds
