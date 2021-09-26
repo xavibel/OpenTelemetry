@@ -20,9 +20,15 @@ namespace WebPage.Controllers
 
         public async Task<IActionResult> Index()
         {
-            _diagnostics.HomeIndex("Extra data");
-            var httpClient = _httpClientFactory.CreateClient();
-            var response = await httpClient.GetAsync("http://localhost:5000/weatherforecast");
+            using (var activity = _diagnostics.HomeIndex("Extra data"))
+            {
+                activity.AddTag("tag1", "value");
+                activity.AddEvent(new ActivityEvent("my event"));
+                activity.AddBaggage("bag1", "value bag 1"); 
+
+                var httpClient = _httpClientFactory.CreateClient();
+                var response = await httpClient.GetAsync("http://localhost:5000/weatherforecast");
+            }
             return View();
         }
 
