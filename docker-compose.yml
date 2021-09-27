@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+
+  grafana:
+    image: grafana/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=password1
+    depends_on:
+      - jaeger
+    ports:
+      - 3000:3000

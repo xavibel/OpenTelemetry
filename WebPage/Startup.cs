@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using WebPage.Diagnostics;
 
 namespace WebPage
@@ -21,6 +23,19 @@ namespace WebPage
         {
             services.AddHttpClient();
             services.AddControllersWithViews();
+
+            services.AddOpenTelemetryTracing(builder =>
+            {
+                builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService("WebPage", serviceVersion: "ver1.0"))
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddSource("HomeModule")
+                    .AddJaegerExporter(options =>
+                    {
+                        options.AgentHost = "10.70.2.15";
+                    });
+            });
 
             services.AddSingleton<WebPageDiagnostics>();
         }

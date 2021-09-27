@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace MyService
 {
@@ -28,6 +30,18 @@ namespace MyService
         {
 
             services.AddControllers();
+            services.AddOpenTelemetryTracing(builder =>
+            {
+                builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService("MyService", serviceVersion: "ver1.0"))
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddJaegerExporter(options =>
+                    {
+                        options.AgentHost = "10.70.2.15";
+                    });
+            });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyService", Version = "v1" });
