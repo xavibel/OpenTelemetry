@@ -33,7 +33,7 @@ namespace WebPage
                     .AddSource("HomeModule")
                     .AddJaegerExporter(options =>
                     {
-                        options.AgentHost = "10.70.2.15";
+                        options.AgentHost = Configuration["Jaeger:AgentHost"];
                     });
             });
 
