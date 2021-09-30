@@ -27,7 +27,7 @@ namespace WebPage.Controllers
                 activity.AddBaggage("bag1", "value bag 1"); 
 
                 var httpClient = _httpClientFactory.CreateClient();
-                var response = await httpClient.GetAsync("http://localhost:5000/weatherforecast");
+                var response = await httpClient.GetAsync("http://localhost:1745/weatherforecast");
             }
             return View();
         }
