@@ -1,9 +1,14 @@
-using System;
+﻿using System;
 
-namespace MyService
+namespace Messages
 {
     public class WeatherForecast
     {
+        public static readonly string[] Summaries = new[]
+        {
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+        };
+
         public DateTime Date { get; set; }
 
         public int TemperatureC { get; set; }

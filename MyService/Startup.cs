@@ -1,3 +1,4 @@
+using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,7 @@ namespace MyService
         {
 
             services.AddControllers();
+            services.AddSingleton(new ServiceBusClient(Configuration["ServiceBus:ConnectionString"]));
             services.AddOpenTelemetryTracing(builder =>
             {
                 builder.SetResourceBuilder(ResourceBuilder.CreateDefault()

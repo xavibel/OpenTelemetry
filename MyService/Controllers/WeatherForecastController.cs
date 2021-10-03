@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Messaging.ServiceBus;
+using Messages;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace MyService.Controllers
 {
@@ -11,16 +16,13 @@ namespace MyService.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ServiceBusClient _client;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, ServiceBusClient client)
         {
             _logger = logger;
+            _client = client;
         }
 
         [HttpGet]
@@ -32,9 +34,23 @@ namespace MyService.Controllers
             {
                 Date = DateTime.Now.AddDays(index),
                 TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
+                Summary = WeatherForecast.Summaries[rng.Next(WeatherForecast.Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Post(WeatherForecast weatherForecast)
+        {
+            var sender = _client.CreateSender("SC2021");
+
+            var msg = new ServiceBusMessage
+            {
+                Body = new BinaryData(JsonConvert.SerializeObject(weatherForecast))
+            };
+
+            await sender.SendMessageAsync(msg);
+            return Ok(Activity.Current?.TraceId.ToString());
         }
     }
 }

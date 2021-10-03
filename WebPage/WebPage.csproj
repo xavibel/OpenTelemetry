@@ -17,4 +17,8 @@
     <PackageReference Include="Serilog.Sinks.Graylog" Version="2.2.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Messages\Messages.csproj" />
+  </ItemGroup>
+
 </Project>

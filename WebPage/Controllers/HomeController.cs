@@ -1,7 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
+using Messages;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using WebPage.Diagnostics;
 using WebPage.Models;
 
@@ -41,6 +46,23 @@ namespace WebPage.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public async Task<IActionResult> WeatherAsync()
+        {
+            var rng = new Random();
+            var weather = new WeatherForecast
+                {
+                    Date = DateTime.Now,
+                    TemperatureC = rng.Next(-20, 55),
+                    Summary = WeatherForecast.Summaries[rng.Next(WeatherForecast.Summaries.Length)]
+                };
+            HttpContent httpContent = new StringContent(JsonConvert.SerializeObject(weather), Encoding.UTF8);
+            httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var httpClient = _httpClientFactory.CreateClient();
+            var response = await httpClient.PostAsync("http://localhost:5000/weatherforecast", httpContent);
+            return View("Index");
         }
     }
 }
