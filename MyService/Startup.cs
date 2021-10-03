@@ -29,6 +29,7 @@ namespace MyService
                         .AddService("MyService", serviceVersion: "ver1.0"))
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
+                    .AddConsoleExporter()
                     .AddJaegerExporter(options =>
                     {
                         options.AgentHost = Configuration["Jaeger:AgentHost"]; 

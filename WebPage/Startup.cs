@@ -28,8 +28,9 @@ namespace WebPage
             {
                 builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
                         .AddService("WebPage", serviceVersion: "ver1.0"))
-                    .AddAspNetCoreInstrumentation()
+                    .AddAspNetCoreInstrumentation(opt => opt.RecordException = true)
                     .AddHttpClientInstrumentation()
+                    .AddConsoleExporter()
                     .AddSource("HomeModule")
                     .AddJaegerExporter(options =>
                     {
