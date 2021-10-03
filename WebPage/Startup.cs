@@ -26,7 +26,9 @@ namespace WebPage
 
             services.AddOpenTelemetryTracing(builder =>
             {
-                builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                builder.SetResourceBuilder(
+                    ResourceBuilder
+                        .CreateDefault()
                         .AddService("WebPage", serviceVersion: "ver1.0"))
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
@@ -55,11 +57,8 @@ namespace WebPage
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

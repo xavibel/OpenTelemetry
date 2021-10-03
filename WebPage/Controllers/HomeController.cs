@@ -22,8 +22,8 @@ namespace WebPage.Controllers
         {
             using (var activity = _diagnostics.HomeIndex("Extra data"))
             {
-                activity.AddTag("tag1", "value");
-                activity.AddEvent(new ActivityEvent("my event"));
+                activity.AddTag("test.tag", "test value");
+                activity.AddEvent(new ActivityEvent("Home event"));
                 activity.AddBaggage("bag1", "value bag 1"); 
 
                 var httpClient = _httpClientFactory.CreateClient();

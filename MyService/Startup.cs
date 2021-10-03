@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,23 +22,25 @@ namespace MyService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
             services.AddControllers();
             services.AddOpenTelemetryTracing(builder =>
             {
-                builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService("MyService", serviceVersion: "ver1.0"))
+                builder.SetResourceBuilder(
+                        ResourceBuilder
+                            .CreateDefault()
+                            .AddService("MyService",
+                                serviceVersion:
+                                "ver1.0")) // The SetResourceBuilder method is your opportunity to add a set of common attributes to all spans created in the application. e.g.: application name.
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddJaegerExporter(options =>
-                    {
-                        options.AgentHost = Configuration["Jaeger:AgentHost"]; 
-                    });
+                    .AddJaegerExporter(options => { options.AgentHost = Configuration["Jaeger:AgentHost"]; });
             });
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyService", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo {Title = "MyService", Version = "v1"});
             });
         }
 
