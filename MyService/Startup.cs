@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Microsoft.EntityFrameworkCore;
+using MyService.Data;
 
 namespace MyService
 {
@@ -31,6 +33,8 @@ namespace MyService
                         .AddService("MyService", serviceVersion: "ver1.0"))
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
+                    .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
                     .AddConsoleExporter()
                     .AddJaegerExporter(options =>
                     {
@@ -42,6 +46,8 @@ namespace MyService
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyService", Version = "v1" });
             });
+            services.AddEntityFrameworkNpgsql().AddDbContext<MyServiceContext>(options =>
+                options.UseNpgsql(Configuration.GetConnectionString("MyServiceContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -18,6 +18,7 @@
     "WebPage": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "http://localhost:5050/Users",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
