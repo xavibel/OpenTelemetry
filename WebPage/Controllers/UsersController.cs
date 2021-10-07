@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging.Console;
 using Newtonsoft.Json;
+using WebPage.Diagnostics;
 using WebPage.Models;
 
 namespace WebPage.Controllers
@@ -17,19 +17,28 @@ namespace WebPage.Controllers
     public class UsersController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly WebPageDiagnostics _diagnostics;
 
-        public UsersController(IHttpClientFactory httpClientFactory)
+        public UsersController(IHttpClientFactory httpClientFactory, WebPageDiagnostics diagnostics)
         {
             _httpClientFactory = httpClientFactory;
+            _diagnostics = diagnostics;
         }
 
         // GET: UsersController
         public async Task<ActionResult> Index()
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            var response = httpClient.GetAsync("http://localhost:5000/api/Users");
-            response.Result.EnsureSuccessStatusCode();
-            var model = await response.Result.Content.ReadFromJsonAsync(typeof(List<User>));
+            object? model;
+            using (var activity = _diagnostics.UserIndex("Extra data"))
+            {
+                activity.AddTag("tag1", "value");
+                activity.AddEvent(new ActivityEvent("my event"));
+                activity.AddBaggage("bag1", "value bag 1");
+
+                var httpClient = _httpClientFactory.CreateClient();
+                var response = httpClient.GetAsync("http://localhost:5000/api/Users");
+                model = await response.Result.Content.ReadFromJsonAsync(typeof(List<User>));
+            }
 
             return View(model);
         }
@@ -145,6 +154,17 @@ namespace WebPage.Controllers
             {
                 return View();
             }
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

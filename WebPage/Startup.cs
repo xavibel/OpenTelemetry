@@ -28,10 +28,11 @@ namespace WebPage
             {
                 builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
                         .AddService("WebPage", serviceVersion: "ver1.0"))
+                    .AddSource("HomeModule")
+                    .AddSource("UsersModule")
                     .AddAspNetCoreInstrumentation(opt => opt.RecordException = true)
                     .AddHttpClientInstrumentation()
                     .AddConsoleExporter()
-                    .AddSource("HomeModule")
                     .AddJaegerExporter(options =>
                     {
                         options.AgentHost = Configuration["Jaeger:AgentHost"];
@@ -65,7 +66,7 @@ namespace WebPage
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Users}/{action=Index}/{id?}");
             });
         }
     }
