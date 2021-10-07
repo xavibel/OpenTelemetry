@@ -14,7 +14,7 @@ namespace Console
 
             var client = new ServiceBusClient(configuration["ServiceBus:ConnectionString"]);
 
-            var receiver = client.CreateReceiver("SC2021");
+            var receiver = client.CreateReceiver(configuration["ServiceBus:QueueName"]);
             var message = await receiver.ReceiveMessageAsync();
             
             System.Console.WriteLine(message.Body.ToString());
