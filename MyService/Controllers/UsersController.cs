@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyService.Data;
+using MyService.Events;
 using MyService.Models;
-using Newtonsoft.Json;
 
 namespace MyService.Controllers
 {
@@ -17,13 +16,13 @@ namespace MyService.Controllers
     public class UsersController : ControllerBase
     {
         private readonly MyServiceContext _context;
-        private readonly ServiceBusClient _client;
+        private readonly UserCreated _userCreated;
 
 
-        public UsersController(MyServiceContext context, ServiceBusClient client)
+        public UsersController(MyServiceContext context, UserCreated userCreated)
         {
             _context = context;
-            _client = client;
+            _userCreated = userCreated;
         }
 
         [HttpGet]
@@ -65,10 +64,8 @@ namespace MyService.Controllers
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+
+                throw;
             }
 
             return NoContent();
@@ -81,27 +78,9 @@ namespace MyService.Controllers
             _context.User.Add(user);
             await _context.SaveChangesAsync();
 
-            await CreatedUserEvent(user);
+            await _userCreated.CreatedUserEvent(user);
 
             return CreatedAtAction("GetUser", new { id = user.Id }, user);
-        }
-
-        private async Task CreatedUserEvent(User user)
-        {
-            var sender = _client.CreateSender("SC2021");
-            var createdUser = new Messages.User()
-            {
-                Name = user.Name,
-                LastName = user.LastName,
-                MailAddress = user.MailAddress,
-                BirthDate = user.BirthDate
-            };
-            var msg = new ServiceBusMessage
-            {
-                Body = new BinaryData(JsonConvert.SerializeObject(createdUser))
-            };
-
-            await sender.SendMessageAsync(msg);
         }
 
         [HttpDelete("{id}")]

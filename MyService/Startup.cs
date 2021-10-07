@@ -9,6 +9,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Microsoft.EntityFrameworkCore;
 using MyService.Data;
+using MyService.Events;
 
 namespace MyService
 {
@@ -27,6 +28,7 @@ namespace MyService
 
             services.AddControllers();
             services.AddSingleton(new ServiceBusClient(Configuration["ServiceBus:ConnectionString"]));
+            services.AddTransient<UserCreated>();
             services.AddOpenTelemetryTracing(builder =>
             {
                 builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
