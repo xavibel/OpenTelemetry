@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using MyService.Models;
@@ -9,6 +10,7 @@ namespace MyService.Events
     public class UserCreated
     {
         private readonly ServiceBusClient _client;
+        private static ActivitySource activitySource = new ActivitySource(nameof(UserCreated), version: "ver1.0");
 
         public UserCreated(ServiceBusClient client)
         {
@@ -17,20 +19,23 @@ namespace MyService.Events
 
         public async Task CreatedUserEvent(User user)
         {
-            var sender = _client.CreateSender("SC2021");
-            var createdUser = new Messages.User()
+            using (var activity = activitySource.StartActivity("Send message", ActivityKind.Producer))
             {
-                Name = user.Name,
-                LastName = user.LastName,
-                MailAddress = user.MailAddress,
-                BirthDate = user.BirthDate
-            };
-            var msg = new ServiceBusMessage
-            {
-                Body = new BinaryData(JsonConvert.SerializeObject(createdUser))
-            };
+                var sender = _client.CreateSender("SC2021");
+                var createdUser = new Messages.User()
+                {
+                    Name = user.Name,
+                    LastName = user.LastName,
+                    MailAddress = user.MailAddress,
+                    BirthDate = user.BirthDate
+                };
+                var msg = new ServiceBusMessage
+                {
+                    Body = new BinaryData(JsonConvert.SerializeObject(createdUser))
+                };
 
-            await sender.SendMessageAsync(msg);
+                await sender.SendMessageAsync(msg);
+            }
         }
     }
 }

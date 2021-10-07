@@ -33,6 +33,7 @@ namespace MyService
             {
                 builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
                         .AddService("MyService", serviceVersion: "ver1.0"))
+                    .AddSource("UserCreated")
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
