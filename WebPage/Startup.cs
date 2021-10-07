@@ -28,7 +28,6 @@ namespace WebPage
             {
                 builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
                         .AddService("WebPage", serviceVersion: "ver1.0"))
-                    .AddSource("HomeModule")
                     .AddSource("UsersModule")
                     .AddAspNetCoreInstrumentation(opt => opt.RecordException = true)
                     .AddHttpClientInstrumentation()
