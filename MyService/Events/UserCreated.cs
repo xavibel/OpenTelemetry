@@ -21,6 +21,8 @@ namespace MyService.Events
         {
             using (var activity = activitySource.StartActivity("Send message", ActivityKind.Producer))
             {
+                activity.AddEvent(new ActivityEvent("User created"));
+
                 var sender = _client.CreateSender("SC2021");
                 var createdUser = new Messages.User()
                 {

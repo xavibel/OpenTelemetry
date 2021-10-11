@@ -23,8 +23,9 @@ namespace MyService
                 .WriteTo.Graylog(new GraylogSinkOptions
                 {
                     MinimumLogEventLevel = LogEventLevel.Information,
-                    HostnameOrAddress = "127.0.0.1",
+                    HostnameOrAddress = "graylog-test.voxelgroup.net",
                     Port = 12201,
+                    Facility = "training",
                     TransportType = TransportType.Udp
                 })
                 .Enrich.FromLogContext()
