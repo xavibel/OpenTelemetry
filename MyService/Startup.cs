@@ -8,8 +8,10 @@ using Microsoft.OpenApi.Models;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MyService.Data;
 using MyService.Events;
+using MyService.Services;
 
 namespace MyService
 {
@@ -26,7 +28,7 @@ namespace MyService
         {
 
             services.AddControllers();
-            services.AddSingleton(new ServiceBusClient(Configuration["ServiceBus:ConnectionString"]));
+            services.AddSingleton(new ServiceBus(new ServiceBusClient(Configuration["ServiceBus:ConnectionString"])));
             services.AddTransient<UserCreated>();
             ConfigureOpenTelemetry(services);
             services.AddSwaggerGen(options =>
@@ -41,8 +43,10 @@ namespace MyService
         {
             services.AddOpenTelemetryTracing(builder =>
             {
-                builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                builder.SetResourceBuilder(ResourceBuilder
+                        .CreateDefault()
                         .AddService("MyService", serviceVersion: "ver1.0"))
+                    .AddSource("ServiceBus")
                     .AddSource("UserCreated")
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
@@ -50,10 +54,11 @@ namespace MyService
                     .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
                     .AddConsoleExporter()
                     .AddJaegerExporter(options => { options.AgentHost = Configuration["Jaeger:AgentHost"]; });
+                
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory factory)
         {
             if (env.IsDevelopment())
             {

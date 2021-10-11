@@ -33,8 +33,4 @@
     <ProjectReference Include="..\Messages\Messages.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Events\" />
-  </ItemGroup>
-
 </Project>

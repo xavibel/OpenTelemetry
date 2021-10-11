@@ -3,28 +3,29 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using MyService.Models;
+using MyService.Services;
 using Newtonsoft.Json;
 
 namespace MyService.Events
 {
     public class UserCreated
     {
-        private readonly ServiceBusClient _client;
-        private static readonly ActivitySource activitySource = new ActivitySource(nameof(UserCreated), version: "ver1.0");
+        private readonly ServiceBus _serviceBus;
+        private static readonly ActivitySource ActivitySource = new ActivitySource(nameof(UserCreated), version: "ver1.0");
 
-        public UserCreated(ServiceBusClient client)
+        public UserCreated(ServiceBus serviceBus)
         {
-            _client = client;
+            _serviceBus = serviceBus;
         }
 
-        public async Task CreatedUserEvent(User user)
+        public async Task CreateEvent(User user)
         {
-            using (var activity = activitySource.StartActivity("Send message", ActivityKind.Producer))
+            using (var activity = ActivitySource.StartActivity("Create user", ActivityKind.Producer))
             {
-                activity.AddEvent(new ActivityEvent("User created"));
+                activity.AddEvent(new ActivityEvent("Create user event"));
 
-                var sender = _client.CreateSender("SC2021");
-                var createdUser = new Messages.User()
+                var sender = _serviceBus.CreateSender("SC2021");
+                var createdUser = new Messages.User
                 {
                     Name = user.Name,
                     LastName = user.LastName,
@@ -36,7 +37,7 @@ namespace MyService.Events
                     Body = new BinaryData(JsonConvert.SerializeObject(createdUser))
                 };
 
-                await sender.SendMessageAsync(msg);
+                await _serviceBus.SendMessage(sender, msg);
             }
         }
     }
