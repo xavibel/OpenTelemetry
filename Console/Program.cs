@@ -8,16 +8,21 @@ namespace Console
     {
         static async Task Main(string[] args)
         {
-            IConfiguration configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
+            var configuration = BuildConfiguration();
 
             var client = new ServiceBusClient(configuration["ServiceBus:ConnectionString"]);
-
             var receiver = client.CreateReceiver(configuration["ServiceBus:QueueName"]);
             var message = await receiver.ReceiveMessageAsync();
             
             System.Console.WriteLine(message.Body.ToString());
+        }
+
+        private static IConfiguration BuildConfiguration()
+        {
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+            return configuration;
         }
     }
 }
