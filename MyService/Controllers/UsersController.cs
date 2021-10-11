@@ -75,12 +75,12 @@ namespace MyService.Controllers
         public async Task<ActionResult<User>> PostUser(User user)
         {
             user.Id = Guid.NewGuid();
-            _context.User.Add(user);
+            await _context.User.AddAsync(user);
             await _context.SaveChangesAsync();
 
             await _userCreated.CreatedUserEvent(user);
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            return CreatedAtAction("PostUser", new { id = user.Id }, user);
         }
 
         [HttpDelete("{id}")]

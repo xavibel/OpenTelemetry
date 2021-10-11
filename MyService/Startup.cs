@@ -30,12 +30,11 @@ namespace MyService
             services.AddSingleton(new ServiceBusClient(Configuration["ServiceBus:ConnectionString"]));
             services.AddTransient<UserCreated>();
             services.AddOpenTelemetryTracing(builder =>
-            {
-                builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService("MyService", serviceVersion: "ver1.0"))
-                    .AddSource("UserCreated")
+            { 
+                builder
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MyService", serviceVersion: "ver1.0"))
+                    .AddSource(nameof(UserCreated))
                     .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
                     .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
                     .AddConsoleExporter()
@@ -53,7 +52,6 @@ namespace MyService
                 options.UseNpgsql(Configuration.GetConnectionString("MyServiceContext")));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -63,12 +61,7 @@ namespace MyService
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyService v1"));
             }
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
-
-            app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
