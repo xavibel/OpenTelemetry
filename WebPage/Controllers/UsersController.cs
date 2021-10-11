@@ -18,6 +18,7 @@ namespace WebPage.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly WebPageDiagnostics _diagnostics;
+        private const string UsersRoute = "https://localhost:5001/api/Users";
 
         public UsersController(IHttpClientFactory httpClientFactory, WebPageDiagnostics diagnostics)
         {
@@ -36,7 +37,7 @@ namespace WebPage.Controllers
                 activity.AddBaggage("bag1", "value bag 1");
 
                 var httpClient = _httpClientFactory.CreateClient();
-                var response = httpClient.GetAsync("http://localhost:5000/api/Users");
+                var response = httpClient.GetAsync(UsersRoute);
                 model = await response.Result.Content.ReadFromJsonAsync(typeof(List<User>));
             }
 
@@ -47,7 +48,7 @@ namespace WebPage.Controllers
         public async Task<ActionResult> Details(Guid id)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var response = httpClient.GetAsync($"http://localhost:5000/api/Users/{id}");
+            var response = httpClient.GetAsync($"{UsersRoute}/{id}");
             response.Result.EnsureSuccessStatusCode();
             var model = await response.Result.Content.ReadFromJsonAsync(typeof(User));
             return View(model);
@@ -78,7 +79,7 @@ namespace WebPage.Controllers
                 httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 var httpClient = _httpClientFactory.CreateClient();
-                await httpClient.PostAsync("http://localhost:5000/api/Users", httpContent);
+                await httpClient.PostAsync(UsersRoute, httpContent);
              
                 return RedirectToAction(nameof(Index));
             }
@@ -92,7 +93,7 @@ namespace WebPage.Controllers
         public async Task<ActionResult> Edit(Guid id)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var response = httpClient.GetAsync($"http://localhost:5000/api/Users/{id}");
+            var response = httpClient.GetAsync($"{UsersRoute}/{id}");
             response.Result.EnsureSuccessStatusCode();
             var model = await response.Result.Content.ReadFromJsonAsync(typeof(User));
             return View(model);
@@ -118,7 +119,7 @@ namespace WebPage.Controllers
                 httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 var httpClient = _httpClientFactory.CreateClient();
-                await httpClient.PutAsync($"http://localhost:5000/api/Users/{id}", httpContent);
+                await httpClient.PutAsync($"{UsersRoute}/{id}", httpContent);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -132,7 +133,7 @@ namespace WebPage.Controllers
         public async Task<ActionResult> Delete(Guid id)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var response = httpClient.GetAsync($"http://localhost:5000/api/Users/{id}");
+            var response = httpClient.GetAsync($"{UsersRoute}/{id}");
             response.Result.EnsureSuccessStatusCode();
             var model = await response.Result.Content.ReadFromJsonAsync(typeof(User));
             return View(model);
@@ -146,7 +147,7 @@ namespace WebPage.Controllers
             try
             {
                 var httpClient = _httpClientFactory.CreateClient();
-                var response = httpClient.DeleteAsync($"http://localhost:5000/api/Users/{id}");
+                var response = httpClient.DeleteAsync($"{UsersRoute}/{id}");
                 response.Result.EnsureSuccessStatusCode();
                 return RedirectToAction(nameof(Index));
             }
