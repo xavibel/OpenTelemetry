@@ -11,6 +11,5 @@ namespace MyService.Models
         [DataType(DataType.Date)]
         public DateTime BirthDate { get; set; }
         public string MailAddress { get; set; }
-        
     }
 }

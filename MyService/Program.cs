@@ -12,6 +12,12 @@ namespace MyService
     {
         public static void Main(string[] args)
         {
+            CreateLogger();
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        private static void CreateLogger()
+        {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console(LogEventLevel.Information)
                 .WriteTo.Graylog(new GraylogSinkOptions
@@ -24,8 +30,6 @@ namespace MyService
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Application", "MyService")
                 .CreateLogger();
-
-            CreateHostBuilder(args).Build().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

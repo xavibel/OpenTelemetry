@@ -15,20 +15,30 @@ namespace MyService
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
 
             services.AddControllers();
             services.AddSingleton(new ServiceBusClient(Configuration["ServiceBus:ConnectionString"]));
             services.AddTransient<UserCreated>();
+            ConfigureOpenTelemetry(services);
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo {Title = "MyService", Version = "v1"});
+            });
+            services.AddEntityFrameworkNpgsql()
+                .AddDbContext<MyServiceContext>(options => options.UseNpgsql(Configuration.GetConnectionString("MyServiceContext")));
+        }
+
+        private void ConfigureOpenTelemetry(IServiceCollection services)
+        {
             services.AddOpenTelemetryTracing(builder =>
             {
                 builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
@@ -39,21 +49,10 @@ namespace MyService
                     .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
                     .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
                     .AddConsoleExporter()
-                    .AddJaegerExporter(options =>
-                    {
-                        options.AgentHost = Configuration["Jaeger:AgentHost"]; 
-                    });
+                    .AddJaegerExporter(options => { options.AgentHost = Configuration["Jaeger:AgentHost"]; });
             });
-
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyService", Version = "v1" });
-            });
-            services.AddEntityFrameworkNpgsql().AddDbContext<MyServiceContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("MyServiceContext")));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -62,13 +61,9 @@ namespace MyService
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyService v1"));
             }
-
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

@@ -10,7 +10,7 @@ namespace MyService.Events
     public class UserCreated
     {
         private readonly ServiceBusClient _client;
-        private static ActivitySource activitySource = new ActivitySource(nameof(UserCreated), version: "ver1.0");
+        private static readonly ActivitySource activitySource = new ActivitySource(nameof(UserCreated), version: "ver1.0");
 
         public UserCreated(ServiceBusClient client)
         {
