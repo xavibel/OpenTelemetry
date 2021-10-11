@@ -12,8 +12,14 @@ namespace WebPage
     {
         public static void Main(string[] args)
         {
+            CreateLogger();
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        private static void CreateLogger()
+        {
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
+                .WriteTo.Console(LogEventLevel.Information)
                 .WriteTo.Graylog(new GraylogSinkOptions
                 {
                     MinimumLogEventLevel = LogEventLevel.Information,
@@ -24,8 +30,6 @@ namespace WebPage
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Application", "WebPage")
                 .CreateLogger();
-
-            CreateHostBuilder(args).Build().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
