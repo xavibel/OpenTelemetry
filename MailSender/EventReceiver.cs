@@ -12,10 +12,11 @@ namespace MailSender
 {
     public class EventReceiver
     {
-        private static readonly ActivitySource ActivitySource = new ActivitySource(nameof(EventReceiver));
+        private static readonly ActivitySource ActivitySource = new(nameof(EventReceiver));
+        private static readonly TextMapPropagator Propagator = new TraceContextPropagator();
+        
         private readonly ServiceBusClient _client;
         private readonly IConfiguration _configuration;
-        private static readonly TextMapPropagator _propagator = new TraceContextPropagator();
 
         public EventReceiver(ServiceBusClient client, IConfiguration configuration)
         {
@@ -50,16 +51,23 @@ namespace MailSender
         static async Task MessageHandler(ProcessMessageEventArgs args)
         {
             var msg = args.Message;
-            var parentContext = _propagator.Extract(default, msg.ApplicationProperties, ExtractTraceParent);
+            var activity = StartActivity(msg);
 
-            Baggage.Current = parentContext.Baggage;
-
-            using var activity = ActivitySource.StartActivity("Receive message", ActivityKind.Consumer, parentContext.ActivityContext);
-            
             string body = args.Message.Body.ToString();
             activity.SetTag("producer.message", body);
 
             await args.CompleteMessageAsync(args.Message);
+        }
+
+        private static Activity StartActivity(ServiceBusReceivedMessage msg)
+        {
+            var parentContext = Propagator.Extract(default, msg.ApplicationProperties, ExtractTraceParent);
+
+            Baggage.Current = parentContext.Baggage;
+
+            using var activity =
+                ActivitySource.StartActivity("Receive message", ActivityKind.Consumer, parentContext.ActivityContext);
+            return activity;
         }
 
         private static IEnumerable<string> ExtractTraceParent(IReadOnlyDictionary<string, object> props, string key)
@@ -76,6 +84,7 @@ namespace MailSender
 
         static Task ErrorHandler(ProcessErrorEventArgs args)
         {
+            //TODO: Log and trace error
             Console.WriteLine(args.Exception.ToString());
             return Task.CompletedTask;
         }

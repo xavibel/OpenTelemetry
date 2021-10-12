@@ -1,9 +1,6 @@
 ﻿using System.Diagnostics;
-using Azure.Messaging.ServiceBus;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 
 namespace MailSender
 {
@@ -11,30 +8,10 @@ namespace MailSender
     {
         public static void Main(string[] args)
         {
-            Activity.DefaultIdFormat = ActivityIdFormat.W3C;  
-            CreateHostBuilder(args).Build().Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Activity.DefaultIdFormat = ActivityIdFormat.W3C;
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services
-                        .AddSingleton(new ServiceBusClient(hostContext.Configuration["ServiceBus:ConnectionString"]))
-                        .AddSingleton<EventReceiver>()
-                        .AddHostedService<Worker>()
-                        .AddOpenTelemetryTracing(builder =>
-                        {
-                            builder
-                                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MailSender", serviceVersion: "ver1.0"))
-                                .AddSource(nameof(EventReceiver))
-                                .AddGrpcCoreInstrumentation()
-                                .AddConsoleExporter()
-                                .AddJaegerExporter(options =>
-                                {
-                                    options.AgentHost = hostContext.Configuration["Jaeger:AgentHost"];
-                                });
-                        });
-                });
+                .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.UseStartup<Startup>())
+                .Build().Run();
+        }
     }
 }
