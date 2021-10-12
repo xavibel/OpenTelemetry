@@ -5,13 +5,16 @@ using Azure.Messaging.ServiceBus;
 using MyService.Models;
 using MyService.Services;
 using Newtonsoft.Json;
+using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
 
 namespace MyService.Events
 {
     public class UserCreated
     {
         private readonly ServiceBus _serviceBus;
-        private static readonly ActivitySource ActivitySource = new ActivitySource(nameof(UserCreated), version: "ver1.0");
+        private static readonly ActivitySource ActivitySource = new(nameof(UserCreated), "ver1.0");
+        private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
 
         public UserCreated(ServiceBus serviceBus)
         {
@@ -36,6 +39,10 @@ namespace MyService.Events
                 {
                     Body = new BinaryData(JsonConvert.SerializeObject(createdUser))
                 };
+
+                Propagator.Inject(new PropagationContext(activity.Context, Baggage.Current), msg.ApplicationProperties,
+                    (props, key, value) => props[key] = value);
+                activity.SetTag("producer.message", JsonConvert.SerializeObject(createdUser));
 
                 await _serviceBus.SendMessage(sender, msg);
             }

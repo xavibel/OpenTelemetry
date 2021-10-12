@@ -28,13 +28,17 @@ namespace WebPage
 
         private void ConfigureOpenTelemetry(IServiceCollection services)
         {
+            services.AddSingleton<WebPageDiagnostics>();
             services.AddOpenTelemetryTracing(builder =>
             {
                 builder.SetResourceBuilder(ResourceBuilder
                         .CreateDefault()
                         .AddService("WebPage", serviceVersion: "ver1.0"))
                     .AddSource("UsersModule")
-                    .AddAspNetCoreInstrumentation(opt => opt.RecordException = true)
+                    .AddAspNetCoreInstrumentation(opt =>
+                    {
+                        opt.RecordException = true;
+                    })
                     .AddHttpClientInstrumentation()
                     .AddConsoleExporter()
                     .AddJaegerExporter(options => { options.AgentHost = Configuration["Jaeger:AgentHost"]; });
@@ -50,13 +54,10 @@ namespace WebPage
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
