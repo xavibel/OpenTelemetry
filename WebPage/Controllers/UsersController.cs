@@ -18,7 +18,7 @@ namespace WebPage.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly WebPageDiagnostics _diagnostics;
-        private const string UsersRoute = "https://localhost:5001/api/Users";
+        private const string UsersRoute = "http://localhost:5000/api/Users";
 
         public UsersController(IHttpClientFactory httpClientFactory, WebPageDiagnostics diagnostics)
         {

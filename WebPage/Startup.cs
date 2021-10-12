@@ -28,7 +28,6 @@ namespace WebPage
 
         private void ConfigureOpenTelemetry(IServiceCollection services)
         {
-            services.AddSingleton<WebPageDiagnostics>();
             services.AddOpenTelemetryTracing(builder =>
             {
                 builder.SetResourceBuilder(ResourceBuilder
@@ -43,6 +42,7 @@ namespace WebPage
                     .AddConsoleExporter()
                     .AddJaegerExporter(options => { options.AgentHost = Configuration["Jaeger:AgentHost"]; });
             });
+            services.AddSingleton<WebPageDiagnostics>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

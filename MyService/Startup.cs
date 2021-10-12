@@ -14,7 +14,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using MyService.Data;
 using MyService.Events;
-using MyService.Services;
 
 namespace MyService
 {
@@ -31,7 +30,7 @@ namespace MyService
         {
 
             services.AddControllers();
-            services.AddSingleton(new ServiceBus(new ServiceBusClient(Configuration["ServiceBus:ConnectionString"])));
+            services.AddSingleton(new ServiceBusClient(Configuration["ServiceBus:ConnectionString"]));
             services.AddTransient<UserCreated>();
             ConfigureOpenTelemetry(services);
             services.AddSwaggerGen(options =>
@@ -60,7 +59,6 @@ namespace MyService
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime applicationLifetime)
         {
             if (env.IsDevelopment())
