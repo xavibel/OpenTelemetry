@@ -12,20 +12,25 @@ namespace WebPage
     {
         public static void Main(string[] args)
         {
+            CreateLogger();
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        private static void CreateLogger()
+        {
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
+                .WriteTo.Console(LogEventLevel.Information)
                 .WriteTo.Graylog(new GraylogSinkOptions
                 {
                     MinimumLogEventLevel = LogEventLevel.Information,
-                    HostnameOrAddress = "127.0.0.1",
+                    HostnameOrAddress = "graylog-test.voxelgroup.net",
                     Port = 12201,
+                    Facility = "training",
                     TransportType = TransportType.Udp
                 })
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Application", "WebPage")
                 .CreateLogger();
-
-            CreateHostBuilder(args).Build().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

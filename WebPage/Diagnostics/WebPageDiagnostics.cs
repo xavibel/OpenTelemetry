@@ -30,18 +30,12 @@ namespace WebPage.Diagnostics
             return activitySourceUsers.StartActivity("Users", ActivityKind.Producer);
         }
 
-        private Action<ILogger, string, Exception> _homeIndex = LoggerMessage.Define<string>(
+        private readonly Action<ILogger, string, Exception> _homeIndex = LoggerMessage.Define<string>(
             LogLevel.Warning, WebPageClientIds.HomeIndexEventId,
             "We are on Home Index with data {data}");
 
-        private Action<ILogger, string, Exception> _usersIndex = LoggerMessage.Define<string>(
+        private readonly Action<ILogger, string, Exception> _usersIndex = LoggerMessage.Define<string>(
             LogLevel.Warning, WebPageClientIds.UsersIndexEventId,
             "We are on Users Index with data {data}");
-    }
-
-    public class WebPageClientIds
-    {
-        public static EventId HomeIndexEventId = new EventId(100, nameof(HomeIndexEventId));
-        public static EventId UsersIndexEventId = new EventId(200, nameof(UsersIndexEventId));
     }
 }

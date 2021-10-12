@@ -11,22 +11,27 @@ namespace WebPage
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpClient();
             services.AddControllersWithViews();
+            services.AddSingleton<WebPageDiagnostics>();
+            ConfigureOpenTelemetry(services);
+        }
 
+        private void ConfigureOpenTelemetry(IServiceCollection services)
+        {
             services.AddOpenTelemetryTracing(builder =>
             {
-                builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                builder.SetResourceBuilder(ResourceBuilder
+                        .CreateDefault()
                         .AddService("WebPage", serviceVersion: "ver1.0"))
                     .AddSource("UsersModule")
                     .AddAspNetCoreInstrumentation(opt =>
@@ -35,12 +40,8 @@ namespace WebPage
                     })
                     .AddHttpClientInstrumentation()
                     .AddConsoleExporter()
-                    .AddJaegerExporter(options =>
-                    {
-                        options.AgentHost = Configuration["Jaeger:AgentHost"];
-                    });
+                    .AddJaegerExporter(options => { options.AgentHost = Configuration["Jaeger:AgentHost"]; });
             });
-
             services.AddSingleton<WebPageDiagnostics>();
         }
 

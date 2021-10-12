@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -78,7 +77,7 @@ namespace MyService.Controllers
             await _context.User.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            await _userCreated.CreatedUserEvent(user);
+            await _userCreated.CreateEvent(user);
 
             return CreatedAtAction("PostUser", new { id = user.Id }, user);
         }

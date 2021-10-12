@@ -11,35 +11,40 @@ namespace MyService.Events
 {
     public class UserCreated
     {
+        private readonly ServiceBusClient _client;
         private static readonly ActivitySource ActivitySource = new(nameof(UserCreated), "ver1.0");
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
-        private readonly ServiceBusClient _client;
 
         public UserCreated(ServiceBusClient client)
         {
             _client = client;
         }
 
-        public async Task CreatedUserEvent(User user)
+        public async Task CreateEvent(User user)
         {
-            using var activity = ActivitySource.StartActivity("Send message", ActivityKind.Producer);
-
-            var sender = _client.CreateSender("SC2021");
-            var createdUser = new Messages.User()
+            using (var activity = ActivitySource.StartActivity("Create user", ActivityKind.Producer))
             {
-                Name = user.Name,
-                LastName = user.LastName,
-                MailAddress = user.MailAddress,
-                BirthDate = user.BirthDate
-            };
+                activity.AddEvent(new ActivityEvent("Create user event"));
 
-            var msg = new ServiceBusMessage(new BinaryData(JsonConvert.SerializeObject(createdUser)));
+                var sender = _client.CreateSender("SC2021");
+                var createdUser = new Messages.User
+                {
+                    Name = user.Name,
+                    LastName = user.LastName,
+                    MailAddress = user.MailAddress,
+                    BirthDate = user.BirthDate
+                };
+                var msg = new ServiceBusMessage
+                {
+                    Body = new BinaryData(JsonConvert.SerializeObject(createdUser))
+                };
 
-            Propagator.Inject(new PropagationContext(activity.Context, Baggage.Current), msg.ApplicationProperties,
-                (props, key, value) => props[key] = value);
-            activity.SetTag("producer.message", JsonConvert.SerializeObject(createdUser));
+                Propagator.Inject(new PropagationContext(activity.Context, Baggage.Current), msg.ApplicationProperties,
+                    (props, key, value) => props[key] = value);
+                activity.SetTag("producer.message", JsonConvert.SerializeObject(createdUser));
 
-            await sender.SendMessageAsync(msg);
+                await sender.SendMessageAsync(msg);
+            }
         }
     }
 }
