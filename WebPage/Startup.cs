@@ -28,6 +28,7 @@ namespace WebPage
 
         private void ConfigureOpenTelemetry(IServiceCollection services)
         {
+            services.AddSingleton<WebPageDiagnostics>();
             services.AddOpenTelemetryTracing(builder =>
             {
                 builder.SetResourceBuilder(ResourceBuilder
@@ -55,9 +56,7 @@ namespace WebPage
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
