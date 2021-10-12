@@ -15,7 +15,7 @@ namespace MailSender
         private static readonly ActivitySource ActivitySource = new ActivitySource(nameof(EventReceiver));
         private readonly ServiceBusClient _client;
         private readonly IConfiguration _configuration;
-        private static readonly TextMapPropagator _propagator = Propagators.DefaultTextMapPropagator;
+        private static readonly TextMapPropagator _propagator = new TraceContextPropagator();
 
         public EventReceiver(ServiceBusClient client, IConfiguration configuration)
         {
@@ -50,17 +50,8 @@ namespace MailSender
         static async Task MessageHandler(ProcessMessageEventArgs args)
         {
             var msg = args.Message;
-            var parentContext = _propagator.Extract(default, msg.ApplicationProperties,
-                (props, key) =>
-                {
-                    var traceProperties = new List<string>();
-                    if (props.TryGetValue(key, out var value))
-                    {
-                        traceProperties.Add(value.ToString());
-                    }
+            var parentContext = _propagator.Extract(default, msg.ApplicationProperties, ExtractTraceParent);
 
-                    return traceProperties;
-                });
             Baggage.Current = parentContext.Baggage;
 
             using var activity = ActivitySource.StartActivity("Receive message", ActivityKind.Consumer, parentContext.ActivityContext);
@@ -70,6 +61,18 @@ namespace MailSender
 
             await args.CompleteMessageAsync(args.Message);
         }
+
+        private static IEnumerable<string> ExtractTraceParent(IReadOnlyDictionary<string, object> props, string key)
+        {
+            var traceProperties = new List<string>();
+            if (props.TryGetValue(key, out var value))
+            {
+                traceProperties.Add(value.ToString());
+            }
+
+            return traceProperties;
+        }
+
 
         static Task ErrorHandler(ProcessErrorEventArgs args)
         {
