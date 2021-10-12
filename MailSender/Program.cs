@@ -22,11 +22,13 @@ namespace MailSender
                     services.AddHostedService<Worker>();
                     services.AddOpenTelemetryTracing(builder =>
                     {
-                        builder.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MailSender"))
+                        builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                                .AddService("MailSender", serviceVersion: "ver1.0"))
                             .AddJaegerExporter(options =>
                             {
                                 options.AgentHost = hostContext.Configuration["Jaeger:AgentHost"];
-                            });
+                            })
+                            .AddSource(nameof(EventReceiver));
                     });
                 });
     }
