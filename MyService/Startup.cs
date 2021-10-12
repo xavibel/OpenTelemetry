@@ -50,9 +50,8 @@ namespace MyService
                         .CreateDefault()
                         .AddService("MyService", serviceVersion: "ver1.0"))
                     .AddSource("ServiceBus")
-                    .AddSource("UserCreated")
+                    .AddSource(nameof(UserCreated))
                     .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
                     .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
                     .AddConsoleExporter()
@@ -61,19 +60,19 @@ namespace MyService
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime applicationLifetime)
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyService v1"));
             }
+
             app.UseHttpsRedirection();
-            app.UseRouting();
-            app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
-            {
+
                 endpoints.MapControllers();
             });
             SubscribeToServiceBusDiagnosticSource(applicationLifetime);
