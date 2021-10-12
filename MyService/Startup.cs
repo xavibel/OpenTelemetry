@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using MyService.Data;
 using MyService.Events;
 using MyService.Services;
+using IApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 
 namespace MyService
 {
@@ -58,7 +62,7 @@ namespace MyService
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory factory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory factory, IApplicationLifetime applicationLifetime)
         {
             if (env.IsDevelopment())
             {
@@ -72,6 +76,39 @@ namespace MyService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            IDisposable innerSubscription = null;
+            IDisposable outerSubscription = DiagnosticListener.AllListeners.Subscribe(delegate (DiagnosticListener listener)
+            {
+                // subscribe to the Service Bus DiagnosticSource
+                if (listener.Name == "Azure.Messaging.ServiceBus")
+                {
+                    // receive event from Service Bus DiagnosticSource
+                    innerSubscription = listener.Subscribe(delegate (KeyValuePair<string, object> busEvent)
+                    {
+                        if (busEvent.Key.EndsWith("Stop"))
+                        {
+                            using var currentActivity = Activity.Current;
+                            currentActivity?.Parent?.AddEvent(new ActivityEvent(
+                                name: $"{currentActivity.DisplayName}", 
+                                timestamp: currentActivity.StartTimeUtc, 
+                                tags: new ActivityTagsCollection(new List<KeyValuePair<string, object?>>
+                                {
+                                    new("operation.id", currentActivity.Id),
+                                    new("operation.name", currentActivity.OperationName),
+                                    new("operation.start", currentActivity.StartTimeUtc),
+                                    new("duration", currentActivity.Duration)
+                                })));
+                        }
+                    });
+                }
+            });
+
+            applicationLifetime.ApplicationStopping.Register(() =>
+            {
+                outerSubscription?.Dispose();
+                innerSubscription?.Dispose();
             });
         }
     }

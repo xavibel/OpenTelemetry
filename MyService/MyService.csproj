@@ -27,6 +27,7 @@
     <PackageReference Include="Serilog.Sinks.Graylog" Version="2.2.2" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.3.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <PackageReference Include="System.Reactive.Core" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
