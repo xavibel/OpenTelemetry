@@ -44,7 +44,7 @@ namespace MyService.Events
                     (props, key, value) => props[key] = value);
                 activity.SetTag("producer.message", JsonConvert.SerializeObject(createdUser));
 
-                await sender.SendMessageAsync(msg);
+                await _serviceBus.SendMessage(sender, msg);
             }
         }
     }
