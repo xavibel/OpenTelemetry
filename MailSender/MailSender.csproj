@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="OpenTelemetry" Version="1.1.0" />
+    <PackageReference Include="OpenTelemetry.Contrib.Instrumentation.GrpcCore" Version="1.0.0-beta3" />
     <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.1.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="1.1.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc7" />

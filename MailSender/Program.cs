@@ -1,4 +1,5 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using System.Diagnostics;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Resources;
@@ -10,6 +11,7 @@ namespace MailSender
     {
         public static void Main(string[] args)
         {
+            Activity.DefaultIdFormat = ActivityIdFormat.W3C;  
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -17,19 +19,22 @@ namespace MailSender
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton(new ServiceBusClient(hostContext.Configuration["ServiceBus:ConnectionString"]));
-                    services.AddSingleton<EventReceiver>();
-                    services.AddHostedService<Worker>();
-                    services.AddOpenTelemetryTracing(builder =>
-                    {
-                        builder.SetResourceBuilder(ResourceBuilder.CreateDefault()
-                                .AddService("MailSender", serviceVersion: "ver1.0"))
-                            .AddJaegerExporter(options =>
-                            {
-                                options.AgentHost = hostContext.Configuration["Jaeger:AgentHost"];
-                            })
-                            .AddSource(nameof(EventReceiver));
-                    });
+                    services
+                        .AddSingleton(new ServiceBusClient(hostContext.Configuration["ServiceBus:ConnectionString"]))
+                        .AddSingleton<EventReceiver>()
+                        .AddHostedService<Worker>()
+                        .AddOpenTelemetryTracing(builder =>
+                        {
+                            builder
+                                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MailSender", serviceVersion: "ver1.0"))
+                                .AddSource(nameof(EventReceiver))
+                                .AddGrpcCoreInstrumentation()
+                                .AddConsoleExporter()
+                                .AddJaegerExporter(options =>
+                                {
+                                    options.AgentHost = hostContext.Configuration["Jaeger:AgentHost"];
+                                });
+                        });
                 });
     }
 }
