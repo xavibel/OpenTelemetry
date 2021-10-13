@@ -44,7 +44,6 @@ namespace WebPage.Controllers
             return View(model);
         }
 
-        // GET: UsersController/Details/5
         public async Task<ActionResult> Details(Guid id)
         {
             var httpClient = _httpClientFactory.CreateClient();
@@ -54,13 +53,11 @@ namespace WebPage.Controllers
             return View(model);
         }
 
-        // GET: UsersController/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: UsersController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(IFormCollection collection)
@@ -89,7 +86,6 @@ namespace WebPage.Controllers
             }
         }
 
-        // GET: UsersController/Edit/5
         public async Task<ActionResult> Edit(Guid id)
         {
             var httpClient = _httpClientFactory.CreateClient();
@@ -99,7 +95,6 @@ namespace WebPage.Controllers
             return View(model);
         }
 
-        // POST: UsersController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(Guid id, IFormCollection collection)
@@ -129,7 +124,6 @@ namespace WebPage.Controllers
             }
         }
 
-        // GET: UsersController/Delete/5
         public async Task<ActionResult> Delete(Guid id)
         {
             var httpClient = _httpClientFactory.CreateClient();
@@ -139,7 +133,6 @@ namespace WebPage.Controllers
             return View(model);
         }
 
-        // POST: UsersController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(Guid id, IFormCollection collection)
