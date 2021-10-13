@@ -48,7 +48,7 @@ namespace MyService
                 builder.SetResourceBuilder(ResourceBuilder
                         .CreateDefault()
                         .AddService("MyService", serviceVersion: "ver1.0"))
-                    .AddSource("ServiceBus")
+                    .AddSource("*ServiceBus*")
                     .AddSource(nameof(UserCreated))
                     .AddAspNetCoreInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)

@@ -21,7 +21,6 @@ namespace MailSender
             services.AddOpenTelemetryTracing(builder => builder
                 .SetResourceBuilder(ResourceBuilder.CreateDefault()
                     .AddService("MailSender", serviceVersion: "ver1.0"))
-                .AddAspNetCoreInstrumentation()
                 .AddSource(nameof(EventReceiver))
                 .AddConsoleExporter()
                 .AddJaegerExporter(options =>
