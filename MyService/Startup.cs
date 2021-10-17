@@ -48,11 +48,9 @@ namespace MyService
                 builder.SetResourceBuilder(ResourceBuilder
                         .CreateDefault()
                         .AddService("MyService", serviceVersion: "ver1.0"))
-                    .AddSource("*ServiceBus*")
                     .AddSource(nameof(UserCreated))
                     .AddAspNetCoreInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
-                    .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
                     .AddConsoleExporter()
                     .AddJaegerExporter(options => { options.AgentHost = Configuration["Jaeger:AgentHost"]; });
                 

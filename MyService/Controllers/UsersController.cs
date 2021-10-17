@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MyService.Data;
 using MyService.Events;
 using MyService.Models;
@@ -16,17 +17,20 @@ namespace MyService.Controllers
     {
         private readonly MyServiceContext _context;
         private readonly UserCreated _userCreated;
+        private readonly ILogger<UsersController> _logger;
 
 
-        public UsersController(MyServiceContext context, UserCreated userCreated)
+        public UsersController(MyServiceContext context, UserCreated userCreated, ILogger<UsersController> logger)
         {
             _context = context;
             _userCreated = userCreated;
+            _logger = logger;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUser()
         {
+            _logger.LogInformation("Get All users");
             return await _context.User.ToListAsync();
         }
 
