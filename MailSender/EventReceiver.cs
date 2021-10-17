@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
-using Microsoft.Extensions.Configuration;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 
@@ -14,41 +12,8 @@ namespace MailSender
     {
         private static readonly ActivitySource ActivitySource = new(nameof(EventReceiver));
         private static readonly TextMapPropagator Propagator = new TraceContextPropagator();
-        
-        private readonly ServiceBusClient _client;
-        private readonly IConfiguration _configuration;
 
-        public EventReceiver(ServiceBusClient client, IConfiguration configuration)
-        {
-            _client = client;
-            _configuration = configuration;
-        }
-
-
-        public async void StartAsync(CancellationToken stoppingToken)
-        {
-            ServiceBusProcessor processor = _client.CreateProcessor(_configuration["ServiceBus:QueueName"], new ServiceBusProcessorOptions());
-            
-            try
-            {
-                processor.ProcessMessageAsync += MessageHandler;
-                processor.ProcessErrorAsync += ErrorHandler;
-
-                await processor.StartProcessingAsync(stoppingToken);
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                }
-                await processor.StopProcessingAsync(stoppingToken);
-            }
-            finally
-            {
-                await processor.DisposeAsync();
-                await _client.DisposeAsync();
-            }
-
-        }
-
-        static async Task MessageHandler(ProcessMessageEventArgs args)
+        public async Task MessageHandler(ProcessMessageEventArgs args)
         {
             var msg = args.Message;
             var activity = StartActivity(msg);
@@ -82,7 +47,7 @@ namespace MailSender
         }
 
 
-        static Task ErrorHandler(ProcessErrorEventArgs args)
+        public Task ErrorHandler(ProcessErrorEventArgs args)
         {
             //TODO: Log and trace error
             Console.WriteLine(args.Exception.ToString());
