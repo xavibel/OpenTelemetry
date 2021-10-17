@@ -10,17 +10,23 @@ services:
       - POSTGRES_PASSWORD=1234
     ports:
       - '5432:5432'
+    networks:
+      - voxel
 
   zipkin:
     image: openzipkin/zipkin
     ports:
       - 9411:9411
+    networks:
+      - voxel
 
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
       - "6831:6831/udp"
       - "16686:16686"
+    networks:
+      - voxel
 
   grafana:
     image: grafana/grafana
@@ -28,11 +34,25 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=password1
     depends_on:
       - jaeger
+      - loki
     ports:
       - 3000:3000
+    networks:
+      - voxel
   
+  loki:
+    image: grafana/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: on-failure
+    networks:
+      - voxel
+
   mongodb:
     image: mongo
+    networks:
+      - voxel
   
   # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/7.10/docker.html
   elasticsearch:
@@ -47,6 +67,8 @@ services:
         soft: -1
         hard: -1
     mem_limit: 1g
+    networks:
+      - voxel
   
   # Graylog: https://hub.docker.com/r/graylog/graylog/
   graylog:
@@ -76,3 +98,9 @@ services:
       - 12201:12201
       # GELF UDP
       - 12201:12201/udp
+    networks:
+      - voxel
+
+networks:
+  voxel:
+    name: voxel-network
